@@ -1,0 +1,30 @@
+{
+  "Routes": [
+      {
+        "UpstreamPathTemplate": "/api/user",
+        "UpstreamHttpMethod": ["Post"],
+        "DownstreamPathTemplate": "/user",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 5004
+          }
+        ],
+        "SwaggerKey": "User"
+      }
+    ],
+
+  "SwaggerEndPoints": [
+    {
+      "Key": "User",
+      "Config": [
+        {
+          "Name": "User API",
+          "Version": "v1",
+          "Url": "http://localhost:5004/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ]
+}
