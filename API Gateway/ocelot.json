@@ -1,23 +1,101 @@
 {
   "Routes": [
-      {
-        "UpstreamPathTemplate": "/api/user",
-        "UpstreamHttpMethod": ["Post"],
-        "DownstreamPathTemplate": "/user",
-        "DownstreamScheme": "http",
-        "DownstreamHostAndPorts": [
-          {
-            "Host": "localhost",
-            "Port": 5004
-          }
-        ],
-        "SwaggerKey": "User"
-      }
-    ],
+    {
+      "UpstreamPathTemplate": "/api/user/{userId}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/user/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "UserService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/user/edit/{userId}",
+      "UpstreamHttpMethod": ["Put"],
+      "DownstreamPathTemplate": "/user/edit/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "UserService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/user/edit/manager",
+      "UpstreamHttpMethod": ["Put"],
+      "DownstreamPathTemplate": "/user/edit/manager",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "UserService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/auth/register",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/auth/register",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "UserService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/auth/login",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/auth/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "UserService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/auth/logout",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/auth/logout",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "UserService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/auth/refresh-tokens",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/auth/refresh-tokens",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "SwaggerKey": "UserService"
+    }
+  ],
 
   "SwaggerEndPoints": [
     {
-      "Key": "User",
+      "Key": "UserService",
       "Config": [
         {
           "Name": "User API",

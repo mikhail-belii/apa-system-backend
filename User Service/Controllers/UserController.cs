@@ -6,9 +6,23 @@ namespace User_Service.Controllers;
 [Route("user")]
 public class UserController : ControllerBase
 {
-    [HttpPost()]
-    public async Task<IActionResult> GetProfile()
+    [HttpGet("{userId:guid}")]
+    public async Task<IActionResult> GetProfile([FromRoute] Guid userId)
     {
         return Ok();
     }
+
+    [HttpPut("edit/{userId:guid}")]
+    public async Task<IActionResult> EditProfile(
+        [FromRoute] Guid userId,
+        [FromBody] Model userEditModel)
+    {
+        return Ok();
+    } 
+    
+    [HttpPut("edit/manager")]
+    public async Task<IActionResult> EditCredentials([FromBody] Model userCredentialsModel)
+    {
+        return Ok();
+    } 
 }
