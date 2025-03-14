@@ -90,6 +90,305 @@
         }
       ],
       "SwaggerKey": "UserService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/document/passport/{userId}",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/document/passport/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "DocumentService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/document/educational-document/{userId}",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/document/educational-document/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "DocumentService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/document/passport/{userId}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/document/passport/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "DocumentService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/document/educational-document/{userId}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/document/educational-document/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "DocumentService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/document/file/{fileId}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/document/file/{fileId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "DocumentService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/document/file/{fileId}",
+      "UpstreamHttpMethod": ["Delete"],
+      "DownstreamPathTemplate": "/document/file/{fileId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "SwaggerKey": "DocumentService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/directory/import",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/directory/import",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "SwaggerKey": "DirectoryService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/directory/topicality",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/directory/topicality",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "SwaggerKey": "DirectoryService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/directory/education-levels",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/directory/education-levels",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "SwaggerKey": "DirectoryService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/directory/education-document-types",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/directory/education-document-types",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "SwaggerKey": "DirectoryService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/directory/faculties",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/directory/faculties",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "SwaggerKey": "DirectoryService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/directory/programs",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/directory/programs",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5005
+        }
+      ],
+      "SwaggerKey": "DirectoryService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/programs",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/admission/programs",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/select-program/{programId}",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/admission/select-program/{programId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/select-program/{programId}/priority/{priority}",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/admission/select-program/{programId}/priority/{priority}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/select-program/{programId}",
+      "UpstreamHttpMethod": ["Delete"],
+      "DownstreamPathTemplate": "/admission/select-program/{programId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/{userId}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/admission/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/take/{userId}",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/admission/take/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/refuse/{userId}",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/admission/refuse/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/programs/{userId}",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/admission/programs/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/status",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/admission/status",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/managers",
+      "UpstreamHttpMethod": ["Get"],
+      "DownstreamPathTemplate": "/admission/managers",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
+    },
+    {
+      "UpstreamPathTemplate": "/api/admission/assignment",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/admission/assignment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "SwaggerKey": "AdmissionService"
     }
   ],
 
@@ -101,6 +400,36 @@
           "Name": "User API",
           "Version": "v1",
           "Url": "http://localhost:5004/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "DocumentService",
+      "Config": [
+        {
+          "Name": "Document API",
+          "Version": "v1",
+          "Url": "http://localhost:5003/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "DirectoryService",
+      "Config": [
+        {
+          "Name": "Directory API",
+          "Version": "v1",
+          "Url": "http://localhost:5005/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "AdmissionService",
+      "Config": [
+        {
+          "Name": "Admission API",
+          "Version": "v1",
+          "Url": "http://localhost:5002/swagger/v1/swagger.json"
         }
       ]
     }
