@@ -9,5 +9,10 @@ public class HeadManagerConfiguration : IEntityTypeConfiguration<HeadManagerEnti
     public void Configure(EntityTypeBuilder<HeadManagerEntity> builder)
     {
         builder.HasKey(h => h.Id);
+        builder.HasOne<UserEntity>()
+            .WithOne()
+            .HasForeignKey<HeadManagerEntity>(h => h.Id)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

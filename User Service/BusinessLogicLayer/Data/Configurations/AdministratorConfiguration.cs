@@ -9,5 +9,10 @@ public class AdministratorConfiguration : IEntityTypeConfiguration<Administrator
     public void Configure(EntityTypeBuilder<AdministratorEntity> builder)
     {
         builder.HasKey(a => a.Id);
+        builder.HasOne<UserEntity>()
+            .WithOne()
+            .HasForeignKey<AdministratorEntity>(a => a.Id)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

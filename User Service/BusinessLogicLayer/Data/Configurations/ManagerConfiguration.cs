@@ -9,5 +9,10 @@ public class ManagerConfiguration : IEntityTypeConfiguration<ManagerEntity>
     public void Configure(EntityTypeBuilder<ManagerEntity> builder)
     {
         builder.HasKey(m => m.Id);
+        builder.HasOne<UserEntity>()
+            .WithOne()
+            .HasForeignKey<ManagerEntity>(m => m.Id)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
