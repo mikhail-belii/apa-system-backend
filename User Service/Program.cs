@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Common;
+using Common.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using User_Service.BusinessLogicLayer.Data;
 
@@ -32,6 +33,8 @@ builder.Services.AddControllers(options =>
 });
 
 var app = builder.Build();
+
+app.UseCustomExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

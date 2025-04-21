@@ -128,7 +128,7 @@ public class AuthController : ControllerBase
             return BadRequest(new ResponseModel
             {
                 Status = "400",
-                Message = "Invalid refresh token"
+                Message = "Invalid user id or refresh token"
             });
         }
 
