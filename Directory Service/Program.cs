@@ -5,7 +5,9 @@ using System.Text.Json.Serialization;
 using Common;
 using Common.Middlewares;
 using Directory_Service.BusinessLogicLayer.Data;
+using Directory_Service.BusinessLogicLayer.Jobs;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -43,6 +45,18 @@ builder.Services.AddHttpClient("ApplicantDictionaryApiClient", client =>
 
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
         "Basic", credentials);
+});
+
+builder.Services.AddQuartz(configure =>
+{
+    var importJobKey = new JobKey(nameof(DirectoryImportJob));
+
+    configure.AddJob<DirectoryImportJob>(options => options.WithIdentity(importJobKey).StoreDurably());
+});
+
+builder.Services.AddQuartzHostedService(options =>
+{
+    options.WaitForJobsToComplete = true;
 });
 
 var app = builder.Build();

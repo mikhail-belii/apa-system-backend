@@ -4,7 +4,9 @@ using Common.DtoModels.Enums;
 using Common.DtoModels.Other;
 using Common.Interfaces.DirectoryService;
 using Directory_Service.BusinessLogicLayer.Data;
+using Directory_Service.BusinessLogicLayer.Jobs;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 
 namespace Directory_Service.BusinessLogicLayer.Services;
 
@@ -13,37 +15,67 @@ public class DirectoryService : IDirectoryService
     private readonly IExternalApiService _externalApiService;
     private readonly DirectoryDbContext _dbContext;
     private readonly IConfiguration _configuration;
+    private readonly ISchedulerFactory _schedulerFactory;
 
-    public DirectoryService(IExternalApiService externalApiService, DirectoryDbContext dbContext, IConfiguration configuration)
+    public DirectoryService(IExternalApiService externalApiService, DirectoryDbContext dbContext, IConfiguration configuration, ISchedulerFactory schedulerFactory)
     {
         _externalApiService = externalApiService;
         _dbContext = dbContext;
         _configuration = configuration;
+        _schedulerFactory = schedulerFactory;
     }
 
-    public async Task<ResponseModel> ImportDirectory(ImportDirectoryModel importDirectoryModel)
+    public async Task ImportDirectory(ImportDirectoryModel importDirectoryModel)
     {
         var now = DateTime.UtcNow;
 
         foreach (var type in importDirectoryModel.DirectoryTypes)
         {
-            switch (type)
+            var log = new DirectoryImportLogEntity
             {
-                case DirectoryType.EducationLevels:
-                    var levels = await _externalApiService.ImportEducationLevelsAsync();
-                    var dbLevels = await _dbContext.EducationLevels.ToListAsync();
-                    foreach (var level in levels)
-                    {
-                        var existing = dbLevels.FirstOrDefault(
-                            e => e.ExternalId == level.Id && e.IsActual);
-                        if (existing != null)
-                        {
-                            if (existing.Name != level.Name)
-                            {
-                                existing.IsActual = false;
-                                existing.LastUpdated = now;
-                                _dbContext.Update(existing);
+                DirectoryType = type,
+                Id = Guid.NewGuid(),
+                ImportTime = now,
+                RecordsCount = 0,
+                Status = ImportDirectoryStatus.InProgress
+            };
+            _dbContext.DirectoryImportLogs.Add(log);
+            await _dbContext.SaveChangesAsync();
 
+            try
+            {
+                var importedCount = 0;
+                switch (type)
+                {
+                    case DirectoryType.EducationLevels:
+                        var levels = await _externalApiService.ImportEducationLevelsAsync();
+                        var dbLevels = await _dbContext.EducationLevels.ToListAsync();
+                        foreach (var level in levels)
+                        {
+                            var existing = dbLevels.FirstOrDefault(
+                                e => e.ExternalId == level.Id && e.IsActual);
+                            if (existing != null)
+                            {
+                                if (existing.Name != level.Name)
+                                {
+                                    existing.IsActual = false;
+                                    existing.LastUpdated = now;
+                                    _dbContext.Update(existing);
+
+                                    var newEducationLevel = new EducationLevelEntity
+                                    {
+                                        CreateTime = now,
+                                        ExternalId = level.Id,
+                                        Name = level.Name,
+                                        Id = Guid.NewGuid(),
+                                        IsActual = true
+                                    };
+                                    _dbContext.EducationLevels.Add(newEducationLevel);
+                                    importedCount++;
+                                }
+                            }
+                            else
+                            {
                                 var newEducationLevel = new EducationLevelEntity
                                 {
                                     CreateTime = now,
@@ -53,41 +85,57 @@ public class DirectoryService : IDirectoryService
                                     IsActual = true
                                 };
                                 _dbContext.EducationLevels.Add(newEducationLevel);
+                                importedCount++;
                             }
                         }
-                        else
+                        await _dbContext.SaveChangesAsync();
+                        break;
+                    case DirectoryType.DocumentTypes:
+                        var types = await _externalApiService.ImportDocumentTypesAsync();
+                        var dbTypes = await _dbContext.DocumentTypes
+                            .Include(d => d.EducationLevel)
+                            .Include(d => d.NextEducationLevels)
+                            .ToListAsync();
+                        foreach (var documentType in types)
                         {
-                            var newEducationLevel = new EducationLevelEntity
+                            var existing = dbTypes.FirstOrDefault(
+                                d => d.ExternalId == documentType.Id && d.IsActual);
+                            if (existing != null)
                             {
-                                CreateTime = now,
-                                ExternalId = level.Id,
-                                Name = level.Name,
-                                Id = Guid.NewGuid(),
-                                IsActual = true
-                            };
-                            _dbContext.EducationLevels.Add(newEducationLevel);
-                        }
-                    }
-                    await _dbContext.SaveChangesAsync();
-                    break;
-                case DirectoryType.DocumentTypes:
-                    var types = await _externalApiService.ImportDocumentTypesAsync();
-                    var dbTypes = await _dbContext.DocumentTypes
-                        .Include(d => d.EducationLevel)
-                        .Include(d => d.NextEducationLevels)
-                        .ToListAsync();
-                    foreach (var documentType in types)
-                    {
-                        var existing = dbTypes.FirstOrDefault(
-                            d => d.ExternalId == documentType.Id && d.IsActual);
-                        if (existing != null)
-                        {
-                            if (existing.Name != documentType.Name)
+                                if (existing.Name != documentType.Name)
+                                {
+                                    existing.IsActual = false;
+                                    existing.LastUpdated = now;
+                                    _dbContext.Update(existing);
+                                    
+                                    var actualEducationLevels = await _dbContext.EducationLevels
+                                        .Where(e => e.IsActual)
+                                        .ToListAsync();
+                                    var educationLevelId = await _dbContext.EducationLevels
+                                        .Where(e => e.ExternalId == documentType.EducationLevel.Id && e.IsActual)
+                                        .Select(e => e.Id)
+                                        .FirstAsync();
+
+                                    var newDocumentType = new DocumentTypeEntity
+                                    {
+                                        CreateTime = now,
+                                        EducationLevelId = educationLevelId,
+                                        ExternalId = documentType.Id,
+                                        Id = Guid.NewGuid(),
+                                        IsActual = true,
+                                        Name = documentType.Name,
+                                        NextEducationLevels = documentType.NextEducationLevels?
+                                            .Select(level => actualEducationLevels
+                                                .FirstOrDefault(e => e.ExternalId == level.Id))
+                                            .Where(e => e != null)
+                                            .ToList()
+                                    };
+                                    _dbContext.DocumentTypes.Add(newDocumentType);
+                                    importedCount++;
+                                }
+                            }
+                            else
                             {
-                                existing.IsActual = false;
-                                existing.LastUpdated = now;
-                                _dbContext.Update(existing);
-                                
                                 var actualEducationLevels = await _dbContext.EducationLevels
                                     .Where(e => e.IsActual)
                                     .ToListAsync();
@@ -111,52 +159,40 @@ public class DirectoryService : IDirectoryService
                                         .ToList()
                                 };
                                 _dbContext.DocumentTypes.Add(newDocumentType);
+                                importedCount++;
                             }
                         }
-                        else
+                        await _dbContext.SaveChangesAsync();
+                        break;
+                    case DirectoryType.Faculties:
+                        var faculties = await _externalApiService.ImportFacultiesAsync();
+                        var dbFaculties = await _dbContext.Faculties.ToListAsync();
+                        foreach (var faculty in faculties)
                         {
-                            var actualEducationLevels = await _dbContext.EducationLevels
-                                .Where(e => e.IsActual)
-                                .ToListAsync();
-                            var educationLevelId = await _dbContext.EducationLevels
-                                .Where(e => e.ExternalId == documentType.EducationLevel.Id && e.IsActual)
-                                .Select(e => e.Id)
-                                .FirstAsync();
-
-                            var newDocumentType = new DocumentTypeEntity
+                            var existing = dbFaculties.FirstOrDefault(
+                                f => f.ExternalId == faculty.Id && f.IsActual);
+                            if (existing != null)
                             {
-                                CreateTime = now,
-                                EducationLevelId = educationLevelId,
-                                ExternalId = documentType.Id,
-                                Id = Guid.NewGuid(),
-                                IsActual = true,
-                                Name = documentType.Name,
-                                NextEducationLevels = documentType.NextEducationLevels?
-                                    .Select(level => actualEducationLevels
-                                        .FirstOrDefault(e => e.ExternalId == level.Id))
-                                    .Where(e => e != null)
-                                    .ToList()
-                            };
-                            _dbContext.DocumentTypes.Add(newDocumentType);
-                        }
-                    }
-                    await _dbContext.SaveChangesAsync();
-                    break;
-                case DirectoryType.Faculties:
-                    var faculties = await _externalApiService.ImportFacultiesAsync();
-                    var dbFaculties = await _dbContext.Faculties.ToListAsync();
-                    foreach (var faculty in faculties)
-                    {
-                        var existing = dbFaculties.FirstOrDefault(
-                            f => f.ExternalId == faculty.Id && f.IsActual);
-                        if (existing != null)
-                        {
-                            if (existing.Name != faculty.Name)
-                            {
-                                existing.IsActual = false;
-                                existing.LastUpdated = now;
-                                _dbContext.Update(existing);
+                                if (existing.Name != faculty.Name)
+                                {
+                                    existing.IsActual = false;
+                                    existing.LastUpdated = now;
+                                    _dbContext.Update(existing);
 
+                                    var newFaculty = new FacultyEntity
+                                    {
+                                        CreateTime = now,
+                                        ExternalId = faculty.Id,
+                                        Id = Guid.NewGuid(),
+                                        IsActual = true,
+                                        Name = faculty.Name
+                                    };
+                                    _dbContext.Faculties.Add(newFaculty);
+                                    importedCount++;
+                                }
+                            }
+                            else
+                            {
                                 var newFaculty = new FacultyEntity
                                 {
                                     CreateTime = now,
@@ -166,55 +202,66 @@ public class DirectoryService : IDirectoryService
                                     Name = faculty.Name
                                 };
                                 _dbContext.Faculties.Add(newFaculty);
+                                importedCount++;
                             }
                         }
-                        else
+                        await _dbContext.SaveChangesAsync();
+                        break;
+                    case DirectoryType.Programs:
+                        var pageSize = _configuration
+                            .GetSection("ImportSettings:ProgramsPagination:PageSize")
+                            .Get<int>();
+                        var currentPage = 1;
+                        var pageInfoModel = await _externalApiService.GetProgramsPageInfoModel(pageSize);
+                        var count = pageInfoModel.Count;
+                        var dbPrograms = await _dbContext.EducationPrograms
+                            .Include(p => p.EducationLevel)
+                            .Include(p => p.Faculty)
+                            .Where(p => p.IsActual)
+                            .ToListAsync();
+                        while (currentPage <= count)
                         {
-                            var newFaculty = new FacultyEntity
+                            var programs = await _externalApiService.ImportProgramsAsync(currentPage++, pageSize);
+                            foreach (var program in programs)
                             {
-                                CreateTime = now,
-                                ExternalId = faculty.Id,
-                                Id = Guid.NewGuid(),
-                                IsActual = true,
-                                Name = faculty.Name
-                            };
-                            _dbContext.Faculties.Add(newFaculty);
-                        }
-                    }
-                    await _dbContext.SaveChangesAsync();
-                    break;
-                case DirectoryType.Programs:
-                    var pageSize = _configuration
-                        .GetSection("ImportSettings:ProgramsPagination:PageSize")
-                        .Get<int>();
-                    var currentPage = 1;
-                    var pageInfoModel = await _externalApiService.GetProgramsPageInfoModel(pageSize);
-                    var count = pageInfoModel.Count;
-                    var dbPrograms = await _dbContext.EducationPrograms
-                        .Include(p => p.EducationLevel)
-                        .Include(p => p.Faculty)
-                        .Where(p => p.IsActual)
-                        .ToListAsync();
-                    while (currentPage <= count)
-                    {
-                        var programs = await _externalApiService.ImportProgramsAsync(currentPage++, pageSize);
-                        foreach (var program in programs)
-                        {
-                            var existing = dbPrograms.FirstOrDefault(
-                                p => p.ExternalId == program.Id);
-                            if (existing != null)
-                            {
-                                if (existing.Name != program.Name ||
-                                    existing.Code != program.Code ||
-                                    existing.Language != program.Language ||
-                                    existing.EducationForm != program.EducationForm ||
-                                    existing.Faculty.ExternalId != program.Faculty.Id ||
-                                    existing.EducationLevel.ExternalId != program.EducationLevel.Id)
+                                var existing = dbPrograms.FirstOrDefault(
+                                    p => p.ExternalId == program.Id);
+                                if (existing != null)
                                 {
-                                    existing.IsActual = false;
-                                    existing.LastUpdated = now;
-                                    _dbContext.EducationPrograms.Update(existing);
+                                    if (existing.Name != program.Name ||
+                                        existing.Code != program.Code ||
+                                        existing.Language != program.Language ||
+                                        existing.EducationForm != program.EducationForm ||
+                                        existing.Faculty.ExternalId != program.Faculty.Id ||
+                                        existing.EducationLevel.ExternalId != program.EducationLevel.Id)
+                                    {
+                                        existing.IsActual = false;
+                                        existing.LastUpdated = now;
+                                        _dbContext.EducationPrograms.Update(existing);
 
+                                        var newProgram = new EducationProgramEntity
+                                        {
+                                            Id = Guid.NewGuid(),
+                                            CreateTime = now,
+                                            ExternalId = program.Id,
+                                            Code = program.Code,
+                                            Name = program.Name,
+                                            Language = program.Language,
+                                            EducationForm = program.EducationForm,
+                                            Faculty = await _dbContext.Faculties
+                                                .FirstAsync(
+                                                    f => f.ExternalId == program.Faculty.Id && f.IsActual),
+                                            EducationLevel = await _dbContext.EducationLevels
+                                                .FirstAsync(
+                                                    l => l.ExternalId == program.EducationLevel.Id && l.IsActual),
+                                            IsActual = true
+                                        };
+                                        _dbContext.EducationPrograms.Add(newProgram);
+                                        importedCount++;
+                                    }
+                                }
+                                else
+                                {
                                     var newProgram = new EducationProgramEntity
                                     {
                                         Id = Guid.NewGuid(),
@@ -233,40 +280,67 @@ public class DirectoryService : IDirectoryService
                                         IsActual = true
                                     };
                                     _dbContext.EducationPrograms.Add(newProgram);
+                                    importedCount++;
                                 }
                             }
-                            else
-                            {
-                                var newProgram = new EducationProgramEntity
-                                {
-                                    Id = Guid.NewGuid(),
-                                    CreateTime = now,
-                                    ExternalId = program.Id,
-                                    Code = program.Code,
-                                    Name = program.Name,
-                                    Language = program.Language,
-                                    EducationForm = program.EducationForm,
-                                    Faculty = await _dbContext.Faculties
-                                        .FirstAsync(
-                                            f => f.ExternalId == program.Faculty.Id && f.IsActual),
-                                    EducationLevel = await _dbContext.EducationLevels
-                                        .FirstAsync(
-                                            l => l.ExternalId == program.EducationLevel.Id && l.IsActual),
-                                    IsActual = true
-                                };
-                                _dbContext.EducationPrograms.Add(newProgram);
-                            }
-                        }
 
-                        await _dbContext.SaveChangesAsync();
-                    }
-                    break;
+                            await _dbContext.SaveChangesAsync();
+                        }
+                        break;
+                }
+
+                log.Status = ImportDirectoryStatus.Success;
+                log.RecordsCount = importedCount;
             }
+            catch (Exception ex)
+            {
+                log.Status = ImportDirectoryStatus.Failure;
+            }
+
+            await _dbContext.SaveChangesAsync();
         };
+    }
+
+    public async Task<ResponseModel> EnqueueDirectoryImportJob(ImportDirectoryModel importDirectoryModel)
+    {
+        var scheduler = await _schedulerFactory.GetScheduler();
+        var job = JobBuilder.Create<DirectoryImportJob>()
+            .WithIdentity(nameof(DirectoryImportJob), "DirectoryJobs")
+            .UsingJobData(new JobDataMap
+            {
+                {
+                    "DirectoryTypes", importDirectoryModel.DirectoryTypes
+                }
+            })
+            .Build();
+        var trigger = TriggerBuilder.Create()
+            .StartNow()
+            .Build();
+        await scheduler.ScheduleJob(job, trigger);
         return new ResponseModel
         {
-            Message = "Directory was successfully updated",
-            Status = "200"
+            Status = "200",
+            Message = "Your import request was successfully received and will be processed as soon as possible"
+        };
+    }
+
+    public async Task<DirectoryImportLogModel> GetDirectoryImportState(DirectoryType directoryType)
+    {
+        var lastLog = await _dbContext.DirectoryImportLogs
+            .Where(l => l.DirectoryType == directoryType)
+            .OrderByDescending(l => l.ImportTime)
+            .FirstOrDefaultAsync();
+        if (lastLog == null)
+        {
+            throw new KeyNotFoundException($"There are no imports for this directory type: {directoryType}");
+        }
+
+        return new DirectoryImportLogModel
+        {
+            DirectoryType = lastLog.DirectoryType,
+            ImportTime = lastLog.ImportTime,
+            RecordsCount = lastLog.RecordsCount,
+            Status = lastLog.Status
         };
     }
 

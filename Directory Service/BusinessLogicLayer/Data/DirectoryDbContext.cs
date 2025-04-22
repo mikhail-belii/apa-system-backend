@@ -10,6 +10,7 @@ public class DirectoryDbContext(DbContextOptions<DirectoryDbContext> options): D
     public DbSet<DocumentTypeEntity> DocumentTypes { get; set; }
     public DbSet<FacultyEntity> Faculties { get; set; }
     public DbSet<EducationProgramEntity> EducationPrograms { get; set; }
+    public DbSet<DirectoryImportLogEntity> DirectoryImportLogs { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -17,6 +18,7 @@ public class DirectoryDbContext(DbContextOptions<DirectoryDbContext> options): D
         modelBuilder.ApplyConfiguration(new EducationProgramConfiguration());
         modelBuilder.ApplyConfiguration(new FacultyConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new DirectoryImportLogConfiguration());
         
         base.OnModelCreating(modelBuilder);
     }

@@ -62,6 +62,7 @@ public class ExternalApiService : IExternalApiService
         };
         var url = QueryHelpers.AddQueryString("programs", queryParams);
         var response = await _httpClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<ProgramPagedListModel>(
             json, new JsonSerializerOptions
@@ -80,6 +81,7 @@ public class ExternalApiService : IExternalApiService
         };
         var url = QueryHelpers.AddQueryString("programs", queryParams);
         var response = await _httpClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<ProgramPagedListModel>(
             json, new JsonSerializerOptions
