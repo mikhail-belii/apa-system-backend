@@ -134,4 +134,27 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPost("manager")]
+    public async Task<IActionResult> CreateManager([FromBody] UserLoginModel model,
+        [FromQuery] string firstName,
+        [FromQuery] string lastName)
+    {
+        await _authService.CreateManager(model, firstName, lastName);
+        return Ok();
+    }
+    [HttpPost("head-manager")]
+    public async Task<IActionResult> CreateHeadManager([FromBody] UserLoginModel model,
+        [FromQuery] string firstName,
+        [FromQuery] string lastName)
+    {
+        await _authService.CreateHeadManager(model, firstName, lastName);
+        return Ok();
+    }
+    [HttpPost("administrator")]
+    public async Task<IActionResult> CreateAdministrator([FromBody] UserLoginModel model)
+    {
+        await _authService.CreateAdministrator(model);
+        return Ok();
+    }
 }

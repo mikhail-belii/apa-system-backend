@@ -84,4 +84,62 @@ public class AuthService : IAuthService
         }
         throw new ArgumentException("Incorrect email or password");
     }
+
+    public async Task CreateManager(UserLoginModel model, string firstName, string lastName)
+    {
+        var managerEntity = new ManagerEntity
+        {
+            Id = Guid.NewGuid(),
+            FirstName = firstName,
+            LastName = lastName
+        };
+        var userEntity = new UserEntity
+        {
+            Email = model.Email,
+            Id = managerEntity.Id,
+            PasswordHash = new PasswordService().HashPassword(model.Password),
+            UserRole = UserRole.Manager
+        };
+        await _dbContext.Users.AddAsync(userEntity);
+        await _dbContext.Managers.AddAsync(managerEntity);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task CreateHeadManager(UserLoginModel model, string firstName, string lastName)
+    {
+        var headManagerEntity = new HeadManagerEntity()
+        {
+            Id = Guid.NewGuid(),
+            FirstName = firstName,
+            LastName = lastName
+        };
+        var userEntity = new UserEntity
+        {
+            Email = model.Email,
+            Id = headManagerEntity.Id,
+            PasswordHash = new PasswordService().HashPassword(model.Password),
+            UserRole = UserRole.HeadManager
+        };
+        await _dbContext.Users.AddAsync(userEntity);
+        await _dbContext.HeadManagers.AddAsync(headManagerEntity);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task CreateAdministrator(UserLoginModel model)
+    {
+        var administratorEntity = new AdministratorEntity
+        {
+            Id = Guid.NewGuid()
+        };
+        var userEntity = new UserEntity
+        {
+            Email = model.Email,
+            Id = administratorEntity.Id,
+            PasswordHash = new PasswordService().HashPassword(model.Password),
+            UserRole = UserRole.Administrator
+        };
+        await _dbContext.Users.AddAsync(userEntity);
+        await _dbContext.Administrators.AddAsync(administratorEntity);
+        await _dbContext.SaveChangesAsync();
+    }
 }

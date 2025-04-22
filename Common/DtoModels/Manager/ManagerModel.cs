@@ -1,8 +1,11 @@
-﻿namespace Common.DbModels.Users;
+﻿using Common.DtoModels.Enums;
 
-public class ManagerEntity
+namespace Common.DtoModels.Manager;
+
+public class ManagerModel
 {
     public Guid Id { get; set; }
+    public UserRole Role { get; set; }
     public string FirstName { get; set; }
     public string? MiddleName { get; set; }
     public string LastName { get; set; }

@@ -8,6 +8,7 @@ public static class Extensions
     public static IServiceCollection AddBusinessLogic(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<IAuthService, AuthService>();
+        serviceCollection.AddScoped<IUserService, UserService>();
         serviceCollection.AddScoped<IRefreshTokenService, RefreshTokenService>();
         serviceCollection.AddSingleton<ITokenService, TokenService>();
         return serviceCollection;
